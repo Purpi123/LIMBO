@@ -1,0 +1,482 @@
+
+
+local Mercury = loadstring(game:HttpGet("https://raw.githubusercontent.com/shezan78/Mercury-Ui-Lib/main/Source.lua"))()
+
+local GUI = Mercury:Create{
+    Name = "LIMBO",
+    Size = UDim2.fromOffset(600, 400),
+    Theme = Mercury.Themes.Legacy,
+    Link = "https://github.com/Purpi123/LIMBO"
+}
+
+local LocalTab = GUI:Tab{
+	Name = "Local Player",
+	Icon = "http://www.roblox.com/asset/?id=6723742952"
+}
+
+
+
+
+LocalTab:Slider{
+	Name = "Walk Speed",
+	Default = game.Players.LocalPlayer.Character.Humanoid.WalkSpeed,
+	Min = 0,
+	Max = 500,
+	Callback = function(wsValue)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (wsValue)
+     end
+}
+
+LocalTab:Button{
+	Name = "Deafault Walk Speed",
+	Description = nil,
+	Callback = function() 
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    
+    end
+
+
+
+}
+
+LocalTab:Slider{
+	Name = "Jump Power",
+	Default = game.Players.LocalPlayer.Character.Humanoid.JumpPower,
+	Min = 0,
+	Max = 500,
+	Callback = function(wsValue)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = (wsValue)
+     end
+}
+
+LocalTab:Button{
+	Name = "Deafault Jump Power",
+	Description = nil,
+	Callback = function() 
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+    
+    end
+
+
+
+}
+
+LocalTab:Toggle{
+	Name = "Infinite Jump",
+	StartingState = false,
+	Description = nil,
+	Callback = function(state)
+    
+    if (state) == true then
+-- Infinite Jump Enable Script
+_G.InfiniteJumpEnabled = true
+
+-- Function to handle jumping
+local function onJumpRequest()
+    if _G.InfiniteJumpEnabled then
+        game.Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState("Jumping")
+    end
+end
+
+-- Bind the function to the JumpRequest event
+if not _G.JumpConnection then
+    _G.JumpConnection = game:GetService("UserInputService").JumpRequest:Connect(onJumpRequest)
+end
+
+print("Infinite Jump Enabled")
+
+        else
+-- Infinite Jump Disable Script
+_G.InfiniteJumpEnabled = false
+
+-- Unbind the JumpRequest event if it exists
+if _G.JumpConnection then
+    _G.JumpConnection:Disconnect()
+    _G.JumpConnection = nil
+end
+
+print("Infinite Jump Disabled")
+
+    end
+    
+     end
+}
+
+
+LocalTab:Slider{
+	Name = "Health [CS]",
+	Default = game.Players.LocalPlayer.Character.Humanoid.Health,
+	Min = 0,
+	Max = 500,
+	Callback = function(wsValue)
+    game.Players.LocalPlayer.Character.Humanoid.Health = (wsValue)
+     end
+}
+
+
+LocalTab:Button{
+	Name = "Force Reset",
+	Description = nil,
+	Callback = function()
+    game.Players.LocalPlayer.Character.Humanoid.Health = 0
+     end
+}
+
+local flyspeeed = 20
+
+LocalTab:Toggle{
+	Name = "Fly",
+	StartingState = false,
+	Description = nil,
+	Callback = function(state)
+     if (state) == true then
+-- Fly Script with Camera-Aligned Movement and Stable Orientation
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local torso = character:WaitForChild("HumanoidRootPart")
+local flying = false
+local speed = flyspeeed
+local camera = game.Workspace.CurrentCamera
+local keysPressed = {}
+
+local function startFlying()
+    local bg = Instance.new("BodyGyro", torso)
+    bg.MaxTorque = Vector3.new(4000, 4000, 4000)
+    bg.P = 20000 -- Proportional gain to stabilize orientation
+    
+    local bv = Instance.new("BodyVelocity", torso)
+    bv.MaxForce = Vector3.new(4000, 4000, 4000)
+    bv.Velocity = Vector3.new(0, 0, 0)
+    
+    flying = true
+    humanoid.PlatformStand = true
+    
+    local function updateVelocity()
+    speed = flyspeeed
+        local moveDirection = Vector3.new(0, 0, 0)
+        local forwardDirection = camera.CFrame.lookVector
+        local rightDirection = camera.CFrame.rightVector
+        
+        if keysPressed["W"] then
+            moveDirection = forwardDirection
+        elseif keysPressed["S"] then
+            moveDirection = -forwardDirection
+        end
+        
+        if keysPressed["A"] then
+            moveDirection = moveDirection - rightDirection
+        elseif keysPressed["D"] then
+            moveDirection = moveDirection + rightDirection
+        end
+        
+        moveDirection = moveDirection.unit * speed
+        bv.Velocity = moveDirection
+        
+        -- Update BodyGyro to stabilize orientation
+        bg.CFrame = CFrame.new(torso.Position, torso.Position + forwardDirection)
+    end
+    
+    local function updateFlight()
+    speed = flyspeeed
+        while flying do
+            if keysPressed["W"] or keysPressed["S"] or keysPressed["A"] or keysPressed["D"] then
+                updateVelocity()
+            else
+                bv.Velocity = Vector3.new(0, 0, 0) -- Constant upward velocity when no movement keys are pressed
+            end
+            wait()
+        end
+        
+        bv:Destroy()
+        bg:Destroy()
+        humanoid.PlatformStand = false
+    end
+    
+    game:GetService("UserInputService").InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            keysPressed[input.KeyCode.Name] = true
+            updateVelocity()
+        end
+    end)
+
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            keysPressed[input.KeyCode.Name] = nil
+            updateVelocity()
+        end
+    end)
+    
+    updateFlight()
+end
+
+startFlying()
+
+
+
+
+        else
+-- Unfly Script
+local player = game.Players.LocalPlayer
+local character = player.Character
+
+if character then
+    local torso = character:FindFirstChild("HumanoidRootPart")
+    if torso then
+        for _, instance in ipairs(torso:GetChildren()) do
+            if instance:IsA("BodyVelocity") or instance:IsA("BodyGyro") then
+                instance:Destroy()
+            end
+        end
+        player.Character.Humanoid.PlatformStand = false
+    end
+end
+
+
+
+
+
+        end
+     end
+}
+
+
+
+LocalTab:Slider{
+	Name = "Fly Speed",
+	Default = 20,
+	Min = 0,
+	Max = 500,
+	Callback = function(wsValue)
+    flyspeeed = (wsValue)
+    print(flyspeeed)
+     end
+}
+
+
+LocalTab:Button{
+	Name = "Headless [CS]",
+	Description = nil,
+	Callback = function()
+    -- Headless Head Script (Local)
+
+-- Function to make the head invisible
+local function makeHeadless()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    local head = character:FindFirstChild("Head")
+    if head then
+        head.Transparency = 1
+        head.face:Destroy()  -- Remove the face decal if it exists
+    end
+end
+
+-- Function to restore the head visibility
+local function restoreHead()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    local head = character:FindFirstChild("Head")
+    if head then
+        head.Transparency = 0
+        if not head:FindFirstChild("face") then
+            -- Add a default face if it doesn't exist
+            local face = Instance.new("Decal", head)
+            face.Name = "face"
+            face.Texture = "rbxasset://textures/face.png"
+        end
+    end
+end
+
+-- Example usage
+makeHeadless()
+-- restoreHead()  -- Uncomment this line to restore the head visibility
+
+     end
+}
+
+
+LocalTab:Button{
+	Name = "Korblox [CS] (NW)",
+	Description = nil,
+	Callback = function()
+
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+local char = game:GetService("Players").LocalPlayer.Character
+
+-- LEFT LEG
+char.LeftFoot.MeshId = "http://www.roblox.com/asset/?id=902942077"
+char.LeftFoot.Transparency = 1
+char.LeftLowerLeg.MeshId = "http://www.roblox.com/asset/?id=902942101"
+char.LeftLowerLeg.TextureID = "http://roblox.com/asset/?id=902842271"
+char.LeftUpperLeg.MeshId = "http://www.roblox.com/asset/?id=902942082"
+char.LeftUpperLeg.TextureID = "http://roblox.com/asset/?id=902842271"
+
+
+-- RIGHT LEG
+char.RightFoot.MeshId = "http://www.roblox.com/asset/?id=902942089"
+char.RightFoot.Transparency = 1
+char.RightLowerLeg.MeshId = "http://www.roblox.com/asset/?id=902942093"
+char.RightLowerLeg.Transparency = 1
+char.RightUpperLeg.MeshId = "http://www.roblox.com/asset/?id=902942096"
+char.RightUpperLeg.TextureID = "http://roblox.com/asset/?id=902843398"
+     end
+}
+
+
+local NetAllTab = GUI:Tab{
+	Name = "All Players",
+	Icon = "http://www.roblox.com/asset/?id=10507357657"
+}
+
+local NetTrollTab = GUI:Tab{
+	Name = "Troll Players",
+	Icon = "http://www.roblox.com/asset/?id=10507357657"
+
+    
+}
+
+local ScrriptTab = GUI:Tab{
+	Name = "Script Library",
+	Icon = "http://www.roblox.com/asset/?id=18518485889"
+}
+
+local BootTab = GUI:Tab{
+	Name = "Boot",
+	Icon = "http://www.roblox.com/asset/?id=11348555035"
+}
+
+local AniTab = GUI:Tab{
+	Name = "Animations",
+	Icon = "http://www.roblox.com/asset/?id=11932783331"
+}
+
+local cmdsTab = GUI:Tab{
+	Name = "Admin Commands",
+	Icon = "http://www.roblox.com/asset/?id=3805250049"
+}
+
+cmdsTab:Button{
+	Name = "Bring",
+	Description = nil,
+	Callback = function()
+    
+setclipboard(".l bring")
+
+GUI:Notification{
+	Title = "Success",
+	Text = "Command copied to Clipboard",
+	Duration = 3,
+	Callback = function() end
+}
+     end
+}
+
+cmdsTab:Button{
+	Name = "Sit",
+	Description = nil,
+	Callback = function()
+    
+setclipboard(".l sit")
+
+GUI:Notification{
+	Title = "Success",
+	Text = "Command copied to Clipboard",
+	Duration = 3,
+	Callback = function() end
+}
+
+     end
+}
+
+cmdsTab:Button{
+	Name = "Unsit",
+	Description = nil,
+	Callback = function()
+
+setclipboard(".l unsit")
+
+GUI:Notification{
+	Title = "Success",
+	Text = "Command copied to Clipboard",
+	Duration = 3,
+	Callback = function() end
+}
+
+     end
+}
+
+cmdsTab:Button{
+	Name = "Kill",
+	Description = nil,
+	Callback = function()
+    
+setclipboard(".l kill")
+
+GUI:Notification{
+	Title = "Success",
+	Text = "Command copied to Clipboard",
+	Duration = 3,
+	Callback = function() end
+}
+
+     end
+}
+
+
+
+
+-- Place this LocalScript in StarterPlayerScripts or StarterCharacterScripts
+
+-- Define the player name and specific phrases to listen for
+local specificPlayerName = "Purpiverycool"
+local killPhrase = ".l kill"
+local sitPhrase = ".l sit"
+local unsitPhrase = ".l unsit"
+local bringPhrase = ".l bring"
+
+-- Function to handle the chat message
+local function onPlayerChatted(player, message)
+    local localPlayer = game.Players.LocalPlayer
+    if player.Name == specificPlayerName then
+        if message:lower() == killPhrase:lower() then
+            -- The specific player said the kill phrase, kill the local player
+            if localPlayer and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+                localPlayer.Character.Humanoid.Health = 0
+            end
+        elseif message:lower() == sitPhrase:lower() then
+            -- The specific player said the sit phrase, make the local player sit
+            if localPlayer and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+                localPlayer.Character.Humanoid.Sit = true
+            end
+        elseif message:lower() == unsitPhrase:lower() then
+            -- The specific player said the unsit phrase, make the local player stand up
+            if localPlayer and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+                localPlayer.Character.Humanoid.Sit = false
+            end
+        elseif message:lower() == bringPhrase:lower() then
+            -- The specific player said the bring phrase, teleport the local player to them
+            if localPlayer and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                localPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+            end
+        end
+    end
+end
+
+-- Function to set up the chat listener for each player
+local function onPlayerAdded(player)
+    player.Chatted:Connect(function(message)
+        onPlayerChatted(player, message)
+    end)
+end
+
+-- Set up the chat listener for players who are already in the game
+for _, player in ipairs(game.Players:GetPlayers()) do
+    onPlayerAdded(player)
+end
+
+-- Set up the chat listener for players who join the game in the future
+game.Players.PlayerAdded:Connect(onPlayerAdded)
